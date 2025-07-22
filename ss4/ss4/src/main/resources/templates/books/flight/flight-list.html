@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html lang="vi" xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+        <head>
+        <title>Danh sách chuyến bay - Sky Wings Airlines</title>
+    <style>
+        .flights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .flight-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .flight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .flight-number {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .flight-price {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+        }
+
+        .location {
+            text-align: center;
+            flex: 1;
+        }
+
+        .location-code {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .location-name {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .route-arrow {
+            font-size: 1.5em;
+            color: #667eea;
+            margin: 0 20px;
+        }
+
+        .flight-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+        }
+
+        .detail-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .flights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flight-route {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .route-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<main layout:fragment="content">
+    <!-- Search Section -->
+    <div class="form-section">
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">
+            <i class="fas fa-search"></i> Tìm kiếm chuyến bay
+        </h2>
+        <form class="form-grid" method="GET" th:action="@{/flights}">
+            <div class="form-group">
+                <label for="departure">Điểm khởi hành</label>
+                <input type="text" id="departure" name="departure"
+                       placeholder="Nhập điểm khởi hành" th:value="${departure}">
+            </div>
+            <div class="form-group">
+                <label for="destination">Điểm đến</label>
+                <input type="text" id="destination" name="destination"
+                       placeholder="Nhập điểm đến" th:value="${destination}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Flights Results -->
+    <div th:if="${flights != null and flights.hasContent()}">
+        <div class="flights-grid">
+            <div class="flight-card" th:each="flight : ${flights}">
+                <div class="flight-header">
+                    <div class="flight-number" th:text="${flight.flightNumber}">VN123</div>
+                    <div class="flight-price">
+                        <i class="fas fa-tag"></i>
+                        <span th:text="${#numbers.formatCurrency(flight.price)}">2,500,000 VND</span>
+                    </div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="location">
+                        <div class="location-code" th:text="${flight.departure}">HAN</div>
+                        <div class="location-name">Nơi khởi hành</div>
+                    </div>
+                    <div class="route-arrow">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <div class="location">
+                        <div class="location-code" th:text="${flight.destination}">SGN</div>
+                        <div class="location-name">Nơi đến</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Khởi hành</div>
+                        <div class="detail-value">08:00</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Đến</div>
+                        <div class="detail-value">10:30</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Thời gian</div>
+                        <div class="detail-value">2h 30m</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Loại máy bay</div>
+                        <div class="detail-value">Boeing 737</div>
+                    </div>
+                </div>
+
+                <a th:href="@{/book/{id}(id=${flight.id})}" class="btn btn-success" style="width: 100%;">
+                    <i class="fas fa-ticket-alt"></i> Đặt vé ngay
+                </a>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" th:if="${flights.totalPages > 1}">
+            <a th:href="@{/flights(page=${flights.number - 1}, departure=${departure}, destination=${destination})}"
+               th:if="${flights.hasPrevious()}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+
+            <span th:each="i : ${#numbers.sequence(0, flights.totalPages - 1)}">
+                    <a th:href="@{/flights(page=${i}, departure=${departure}, destination=${destination})}"
+                       th:text="${i + 1}"
+                       th:class="${i == flights.number} ? 'active' : ''">1</a>
+                </span>
+
+            <a th:href="@{/flights(page=${flights.number + 1}, departure=${departure}, destination=${destination})}"
+               th:if="${flights.hasNext()}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card empty-state" th:if="${flights == null or flights.isEmpty()}">
+        <i class="fas fa-plane-slash"></i>
+        <h3>Không tìm thấy chuyến bay</h3>
+        <p>Vui lòng thử lại với điều kiện tìm kiếm khác</p>
+    </div>
+</main>
+</body>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>
