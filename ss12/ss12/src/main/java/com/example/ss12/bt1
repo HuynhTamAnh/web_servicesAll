@@ -1,0 +1,138 @@
+# Tổng quan về JWT (JSON Web Token)
+
+## 1. Khái niệm JWT
+
+JWT (JSON Web Token) là một tiêu chuẩn mở (RFC 7519) được sử dụng để truyền thông tin an toàn giữa các bên dưới dạng một đối tượng JSON. JWT có thể được xác minh và tin cậy vì nó được ký số bằng khóa bí mật (sử dụng HMAC) hoặc cặp khóa công khai/riêng tư (sử dụng RSA hoặc ECDSA).
+
+JWT là một chuỗi Base64URL được mã hóa, có thể chứa thông tin về người dùng hoặc các dữ liệu khác và có thể được truyền qua URL, POST parameter hoặc HTTP header một cách an toàn.
+
+## 2. Điểm mạnh của JWT
+
+### Ưu điểm:
+- **Stateless**: Không cần lưu trữ session trên server, thông tin được chứa trong chính token
+- **Khả năng mở rộng cao**: Dễ dàng scale ứng dụng vì không phụ thuộc vào server state
+- **Hiệu suất tốt**: Giảm tải cho database vì không cần query session
+- **Linh hoạt**: Có thể chứa custom claims phù hợp với nghiệp vụ
+- **Tiêu chuẩn mở**: Được hỗ trợ rộng rãi bởi nhiều ngôn ngữ và framework
+- **Bảo mật**: Có thể được ký số để đảm bảo tính toàn vẹn
+- **Tự chứa**: Chứa đựng tất cả thông tin cần thiết
+
+### Nhược điểm:
+- **Kích thước lớn**: Token có thể trở nên lớn khi chứa nhiều thông tin
+- **Khó thu hồi**: Một khi token được phát hành, khó vô hiệu hóa trước khi hết hạn
+- **Bảo mật payload**: Payload có thể được decode dễ dàng (chỉ được encode Base64)
+- **Lưu trữ phía client**: Cần cẩn thận trong việc lưu trữ token ở client
+- **Không thể cập nhật**: Không thể thay đổi thông tin trong token đã phát hành
+
+## 3. Cấu trúc JWT
+
+JWT bao gồm 3 phần được phân tách bởi dấu chấm (.):
+
+```
+header.payload.signature
+```
+
+### Ví dụ JWT mẫu:
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
+
+### 3.1. Header (Phần đầu)
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+**Ý nghĩa:**
+- `alg`: Thuật toán mã hóa được sử dụng (HS256, RS256, ES256...)
+- `typ`: Loại token (JWT)
+- Có thể chứa thêm các trường như `kid` (Key ID) để xác định khóa được sử dụng
+
+### 3.2. Payload (Phần nội dung)
+
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022,
+  "exp": 1516325422,
+  "aud": "myapp",
+  "iss": "auth-server"
+}
+```
+
+**Ý nghĩa các claims chuẩn:**
+- `sub` (Subject): Chủ thể của token (thường là user ID)
+- `iat` (Issued At): Thời điểm phát hành token
+- `exp` (Expiration Time): Thời điểm hết hạn
+- `aud` (Audience): Đối tượng nhận token
+- `iss` (Issuer): Bên phát hành token
+- `jti` (JWT ID): ID duy nhất của token
+- `nbf` (Not Before): Token chỉ có hiệu lực sau thời điểm này
+
+**Custom claims:** Có thể thêm các trường tùy chỉnh như `name`, `role`, `permissions`...
+
+### 3.3. Signature (Chữ ký)
+
+```javascript
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  secret
+)
+```
+
+**Ý nghĩa:**
+- Đảm bảo tính toàn vẹn của token
+- Xác minh token không bị thay đổi
+- Được tạo bằng cách mã hóa header + payload với secret key
+- Chỉ bên có secret key mới có thể tạo và xác minh signature
+
+## 4. Trường hợp sử dụng phổ biến
+
+### 4.1. Authentication (Xác thực)
+- **Single Sign-On (SSO)**: Đăng nhập một lần, sử dụng nhiều ứng dụng
+- **API Authentication**: Xác thực người dùng khi gọi API
+- **Mobile Applications**: Xác thực trong ứng dụng di động
+
+### 4.2. Authorization (Phân quyền)
+- **Role-based Access Control**: Kiểm soát quyền truy cập dựa trên vai trò
+- **Resource Protection**: Bảo vệ tài nguyên dựa trên quyền hạn
+- **API Gateway**: Kiểm tra quyền truy cập API
+
+### 4.3. Information Exchange (Trao đổi thông tin)
+- **Secure Data Transfer**: Truyền thông tin an toàn giữa các service
+- **Microservices Communication**: Giao tiếp giữa các microservice
+- **Third-party Integration**: Tích hợp với các service bên thứ ba
+
+### 4.4. Session Management
+- **Stateless Sessions**: Quản lý phiên làm việc không cần lưu trữ server-side
+- **Distributed Systems**: Quản lý session trong hệ thống phân tán
+- **Load Balancing**: Hỗ trợ cân bằng tải mà không cần sticky session
+
+### 4.5. Password Reset
+- **Email Verification**: Token trong link xác thực email
+- **Password Reset Links**: Token có thời hạn cho việc đặt lại mật khẩu
+- **Account Activation**: Kích hoạt tài khoản qua email
+
+## 5. Best Practices
+
+### Bảo mật:
+- Sử dụng HTTPS khi truyền JWT
+- Đặt thời gian hết hạn hợp lý (ngắn cho access token)
+- Không lưu thông tin nhạy cảm trong payload
+- Sử dụng strong secret key
+- Implement refresh token mechanism
+
+### Hiệu suất:
+- Giữ payload nhỏ gọn
+- Sử dụng compression khi cần thiết
+- Cache public keys khi sử dụng asymmetric signing
+
+### Quản lý:
+- Implement token blacklist cho việc logout
+- Monitor và log việc sử dụng token
+- Rotate secret keys định kỳ

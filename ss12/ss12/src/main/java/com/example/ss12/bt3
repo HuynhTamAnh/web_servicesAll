@@ -1,0 +1,24 @@
+1. Giải mã JWT thực tế
+
+Nhập JWT token và giải mã ngay lập tức
+Hiển thị Header, Payload, và Signature riêng biệt
+Xử lý lỗi khi JWT không đúng định dạng
+
+2. JWT mẫu để thực hành
+
+JWT cơ bản: User authentication với thông tin an toàn
+JWT Admin: Với nhiều permissions và custom claims
+JWT có thông tin nhạy cảm: Để demo rủi ro bảo mật
+
+3. Phân tích chi tiết
+
+Standard Claims: Giải thích ý nghĩa từng trường (sub, iss, aud, exp, iat...)
+Custom Claims: Phân tích các trường tùy chỉnh
+Thời gian: Chuyển đổi Unix timestamp thành ngày tháng dễ đọc
+Trạng thái: Kiểm tra token còn hiệu lực hay đã hết hạn
+
+4. Cảnh báo bảo mật
+
+Tự động phát hiện thông tin nhạy cảm trong payload
+Cảnh báo về các rủi ro bảo mật khi sử dụng JWT
+Giải thích tại sao không nên để thông tin sensitive trong payload

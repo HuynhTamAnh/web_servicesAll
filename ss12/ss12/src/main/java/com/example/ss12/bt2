@@ -1,0 +1,534 @@
+# Tổng quan về JWT (JSON Web Token)
+
+## 1. Khái niệm JWT
+
+JWT (JSON Web Token) là một tiêu chuẩn mở (RFC 7519) được sử dụng để truyền thông tin an toàn giữa các bên dưới dạng một đối tượng JSON. JWT có thể được xác minh và tin cậy vì nó được ký số bằng khóa bí mật (sử dụng HMAC) hoặc cặp khóa công khai/riêng tư (sử dụng RSA hoặc ECDSA).
+
+JWT là một chuỗi Base64URL được mã hóa, có thể chứa thông tin về người dùng hoặc các dữ liệu khác và có thể được truyền qua URL, POST parameter hoặc HTTP header một cách an toàn.
+
+## 2. Điểm mạnh của JWT
+
+### Ưu điểm:
+- **Stateless**: Không cần lưu trữ session trên server, thông tin được chứa trong chính token
+- **Khả năng mở rộng cao**: Dễ dàng scale ứng dụng vì không phụ thuộc vào server state
+- **Hiệu suất tốt**: Giảm tải cho database vì không cần query session
+- **Linh hoạt**: Có thể chứa custom claims phù hợp với nghiệp vụ
+- **Tiêu chuẩn mở**: Được hỗ trợ rộng rãi bởi nhiều ngôn ngữ và framework
+- **Bảo mật**: Có thể được ký số để đảm bảo tính toàn vẹn
+- **Tự chứa**: Chứa đựng tất cả thông tin cần thiết
+
+### Nhược điểm:
+- **Kích thước lớn**: Token có thể trở nên lớn khi chứa nhiều thông tin
+- **Khó thu hồi**: Một khi token được phát hành, khó vô hiệu hóa trước khi hết hạn
+- **Bảo mật payload**: Payload có thể được decode dễ dàng (chỉ được encode Base64)
+- **Lưu trữ phía client**: Cần cẩn thận trong việc lưu trữ token ở client
+- **Không thể cập nhật**: Không thể thay đổi thông tin trong token đã phát hành
+
+## 3. Cấu trúc JWT
+
+JWT bao gồm 3 phần được phân tách bởi dấu chấm (.):
+
+```
+header.payload.signature
+```
+
+### Ví dụ JWT mẫu:
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
+
+### 3.1. Header (Phần đầu)
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+**Ý nghĩa:**
+- `alg`: Thuật toán mã hóa được sử dụng (HS256, RS256, ES256...)
+- `typ`: Loại token (JWT)
+- Có thể chứa thêm các trường như `kid` (Key ID) để xác định khóa được sử dụng
+
+### 3.2. Payload (Phần nội dung)
+
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022,
+  "exp": 1516325422,
+  "aud": "myapp",
+  "iss": "auth-server"
+}
+```
+
+**Ý nghĩa các claims chuẩn:**
+- `sub` (Subject): Chủ thể của token (thường là user ID)
+- `iat` (Issued At): Thời điểm phát hành token
+- `exp` (Expiration Time): Thời điểm hết hạn
+- `aud` (Audience): Đối tượng nhận token
+- `iss` (Issuer): Bên phát hành token
+- `jti` (JWT ID): ID duy nhất của token
+- `nbf` (Not Before): Token chỉ có hiệu lực sau thời điểm này
+
+**Custom claims:** Có thể thêm các trường tùy chỉnh như `name`, `role`, `permissions`...
+
+### 3.3. Signature (Chữ ký)
+
+```javascript
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  secret
+)
+```
+
+**Ý nghĩa:**
+- Đảm bảo tính toàn vẹn của token
+- Xác minh token không bị thay đổi
+- Được tạo bằng cách mã hóa header + payload với secret key
+- Chỉ bên có secret key mới có thể tạo và xác minh signature
+
+## 4. Trường hợp sử dụng phổ biến
+
+### 4.1. Authentication (Xác thực)
+- **Single Sign-On (SSO)**: Đăng nhập một lần, sử dụng nhiều ứng dụng
+- **API Authentication**: Xác thực người dùng khi gọi API
+- **Mobile Applications**: Xác thực trong ứng dụng di động
+
+### 4.2. Authorization (Phân quyền)
+- **Role-based Access Control**: Kiểm soát quyền truy cập dựa trên vai trò
+- **Resource Protection**: Bảo vệ tài nguyên dựa trên quyền hạn
+- **API Gateway**: Kiểm tra quyền truy cập API
+
+### 4.3. Information Exchange (Trao đổi thông tin)
+- **Secure Data Transfer**: Truyền thông tin an toàn giữa các service
+- **Microservices Communication**: Giao tiếp giữa các microservice
+- **Third-party Integration**: Tích hợp với các service bên thứ ba
+
+### 4.4. Session Management
+- **Stateless Sessions**: Quản lý phiên làm việc không cần lưu trữ server-side
+- **Distributed Systems**: Quản lý session trong hệ thống phân tán
+- **Load Balancing**: Hỗ trợ cân bằng tải mà không cần sticky session
+
+### 4.5. Password Reset
+- **Email Verification**: Token trong link xác thực email
+- **Password Reset Links**: Token có thời hạn cho việc đặt lại mật khẩu
+- **Account Activation**: Kích hoạt tài khoản qua email
+
+## 5. Best Practices
+
+### Bảo mật:
+- Sử dụng HTTPS khi truyền JWT
+- Đặt thời gian hết hạn hợp lý (ngắn cho access token)
+- Không lưu thông tin nhạy cảm trong payload
+- Sử dụng strong secret key
+- Implement refresh token mechanism
+
+### Hiệu suất:
+- Giữ payload nhỏ gọn
+- Sử dụng compression khi cần thiết
+- Cache public keys khi sử dụng asymmetric signing
+
+### Quản lý:
+- Implement token blacklist cho việc logout
+- Monitor và log việc sử dụng token
+- Rotate secret keys định kỳ
+
+## 6. Quy trình xác thực JWT
+
+### 6.1. Tổng quan quy trình
+
+```
+Client → Authentication Server → Resource Server
+   ↓              ↓                    ↓
+Login         Generate JWT        Verify JWT
+Request       & Response          & Access Resource
+```
+
+### 6.2. Bước 1: Đăng nhập và phát sinh token
+
+#### Client gửi thông tin đăng nhập:
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "username": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+#### Authentication Server xử lý:
+
+**Bước 1a: Xác thực thông tin đăng nhập**
+```javascript
+// Pseudo code
+async function authenticateUser(username, password) {
+  // 1. Kiểm tra user tồn tại
+  const user = await User.findByEmail(username);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // 2. Xác thực mật khẩu
+  const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
+  if (!isValidPassword) {
+    throw new Error('Invalid password');
+  }
+
+  return user;
+}
+```
+
+**Bước 1b: Tạo JWT Token**
+```javascript
+const jwt = require('jsonwebtoken');
+
+function generateTokens(user) {
+  const payload = {
+    sub: user.id,                    // Subject (User ID)
+    email: user.email,               // Custom claim
+    role: user.role,                 // Custom claim
+    iat: Math.floor(Date.now() / 1000),  // Issued at
+    exp: Math.floor(Date.now() / 1000) + (15 * 60)  // Expires in 15 minutes
+  };
+
+  // Access Token (short-lived)
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    algorithm: 'HS256'
+  });
+
+  // Refresh Token (long-lived)
+  const refreshToken = jwt.sign(
+    { sub: user.id, type: 'refresh' },
+    process.env.REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { accessToken, refreshToken };
+}
+```
+
+#### Server phản hồi:
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 900,
+    "user": {
+      "id": "12345",
+      "email": "john.doe@example.com",
+      "role": "user"
+    }
+  }
+}
+```
+
+### 6.3. Bước 2: Client lưu trữ và gửi token
+
+#### Lưu trữ token ở client:
+```javascript
+// Option 1: Memory (Secure nhất)
+const tokenStore = {
+  accessToken: null,
+  refreshToken: null
+};
+
+// Option 2: HttpOnly Cookie (Recommended cho web)
+// Set-Cookie: accessToken=...; HttpOnly; Secure; SameSite=Strict
+
+// Option 3: LocalStorage (Cần cẩn thận với XSS)
+localStorage.setItem('accessToken', response.data.accessToken);
+```
+
+#### Gửi token trong request:
+```http
+GET /api/user/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+```
+
+```javascript
+// JavaScript example
+const makeAuthenticatedRequest = async (url) => {
+  const token = getStoredToken(); // Lấy token từ storage
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return response.json();
+};
+```
+
+### 6.4. Bước 3: Backend xác minh token
+
+#### Middleware xác thực:
+```javascript
+const jwt = require('jsonwebtoken');
+
+const authenticateToken = (req, res, next) => {
+  // 1. Lấy token từ header
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({
+      error: 'Access token required'
+    });
+  }
+
+  // 2. Verify token
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          error: 'Token expired',
+          code: 'TOKEN_EXPIRED'
+        });
+      }
+
+      if (err.name === 'JsonWebTokenError') {
+        return res.status(403).json({
+          error: 'Invalid token',
+          code: 'INVALID_TOKEN'
+        });
+      }
+
+      return res.status(403).json({
+        error: 'Token verification failed'
+      });
+    }
+
+    // 3. Lưu thông tin user vào request
+    req.user = {
+      id: decoded.sub,
+      email: decoded.email,
+      role: decoded.role
+    };
+
+    next();
+  });
+};
+```
+
+#### Chi tiết các bước kiểm tra:
+```javascript
+const verifyTokenDetailed = async (token) => {
+  try {
+    // Step 1: Decode header để kiểm tra algorithm
+    const header = jwt.decode(token, { complete: true }).header;
+    if (header.alg !== 'HS256') {
+      throw new Error('Invalid algorithm');
+    }
+
+    // Step 2: Verify signature và decode payload
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Step 3: Kiểm tra claims bắt buộc
+    const now = Math.floor(Date.now() / 1000);
+
+    if (decoded.exp && decoded.exp < now) {
+      throw new Error('Token expired');
+    }
+
+    if (decoded.nbf && decoded.nbf > now) {
+      throw new Error('Token not yet valid');
+    }
+
+    if (decoded.aud && decoded.aud !== 'myapp') {
+      throw new Error('Invalid audience');
+    }
+
+    // Step 4: Kiểm tra blacklist (nếu có)
+    const isBlacklisted = await checkTokenBlacklist(decoded.jti);
+    if (isBlacklisted) {
+      throw new Error('Token has been revoked');
+    }
+
+    // Step 5: Kiểm tra user vẫn tồn tại và active
+    const user = await User.findById(decoded.sub);
+    if (!user || !user.isActive) {
+      throw new Error('User not found or inactive');
+    }
+
+    return { valid: true, user: decoded };
+
+  } catch (error) {
+    return { valid: false, error: error.message };
+  }
+};
+```
+
+### 6.5. Bước 4: Xử lý token hết hạn (Refresh Token)
+
+#### Client xử lý token expired:
+```javascript
+const apiCall = async (url, options = {}) => {
+  let token = getAccessToken();
+
+  // Thử request với access token hiện tại
+  let response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  // Nếu token expired, thử refresh
+  if (response.status === 401) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      // Retry với token mới
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${newToken}`
+        }
+      });
+    } else {
+      // Redirect to login
+      window.location.href = '/login';
+      return;
+    }
+  }
+
+  return response;
+};
+
+const refreshAccessToken = async () => {
+  try {
+    const refreshToken = getRefreshToken();
+
+    const response = await fetch('/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refreshToken })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      storeTokens(data.accessToken, data.refreshToken);
+      return data.accessToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    return null;
+  }
+};
+```
+
+#### Server xử lý refresh token:
+```javascript
+const refreshTokenEndpoint = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  try {
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+
+    // Kiểm tra user và tạo access token mới
+    const user = await User.findById(decoded.sub);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Tạo access token mới
+    const newAccessToken = generateAccessToken(user);
+
+    // Tùy chọn: Tạo refresh token mới (rotation)
+    const newRefreshToken = generateRefreshToken(user);
+
+    res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      expiresIn: 900
+    });
+
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid refresh token' });
+  }
+};
+```
+
+### 6.6. Sơ đồ luồng hoàn chỉnh
+
+```
+1. [Client] Login Request → [Auth Server]
+2. [Auth Server] Validate Credentials
+3. [Auth Server] Generate JWT → [Client]
+4. [Client] Store JWT
+5. [Client] API Request + JWT → [Resource Server]
+6. [Resource Server] Validate JWT
+7. [Resource Server] Extract User Info
+8. [Resource Server] Process Request → [Client]
+
+// Khi token expired:
+9. [Client] Refresh Request → [Auth Server]
+10. [Auth Server] Validate Refresh Token
+11. [Auth Server] Generate New JWT → [Client]
+12. [Client] Retry API Request với JWT mới
+```
+
+### 6.7. Error Handling
+
+```javascript
+const handleJWTErrors = (error, req, res, next) => {
+  if (error.name === 'UnauthorizedError') {
+    const message = error.message;
+
+    switch (error.code) {
+      case 'credentials_required':
+        return res.status(401).json({
+          error: 'No token provided',
+          code: 'NO_TOKEN'
+        });
+
+      case 'invalid_token':
+        return res.status(401).json({
+          error: 'Invalid token format',
+          code: 'INVALID_FORMAT'
+        });
+
+      case 'jwt_malformed':
+        return res.status(401).json({
+          error: 'Malformed token',
+          code: 'MALFORMED'
+        });
+
+      case 'jwt_expired':
+        return res.status(401).json({
+          error: 'Token expired',
+          code: 'EXPIRED'
+        });
+
+      default:
+        return res.status(401).json({
+          error: 'Authentication failed',
+          code: 'AUTH_FAILED'
+        });
+    }
+  }
+
+  next(error);
+};
+```
