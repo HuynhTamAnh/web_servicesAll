@@ -1,0 +1,134 @@
+BẢNG SO SÁNH SPRING MVC VÀ SPRING BOOT
+
+1. KHÁI NIỆM
+
+Spring MVC: Là một framework web dựa trên mô hình MVC (Model-View-Controller) thuộc Spring Framework. Cung cấp các tính năng để xây dựng ứng dụng web linh hoạt và có thể cấu hình cao.
+
+Spring Boot: Là một extension của Spring Framework, được thiết kế để đơn giản hóa việc tạo và chạy các ứng dụng Spring standalone với cấu hình tối thiểu.
+
+2. CẤU HÌNH
+
+Spring MVC - Phức tạp và thủ công:
+- Cần cấu hình XML hoặc Java Config chi tiết
+- Phải định nghĩa beans, view resolver, handler mapping
+- Cấu hình database connection, transaction manager thủ công
+- Cần thiết lập dispatcher servlet
+
+Spring Boot - Đơn giản và tự động:
+- Auto-configuration dựa trên classpath
+- Sử dụng annotations như @SpringBootApplication
+- Cấu hình thông qua application.properties/yml
+- Hầu hết cấu hình được xử lý tự động
+
+3. KHỞI TẠO DỰ ÁN
+
+Spring MVC - Phức tạp:
+- Cần tạo cấu trúc thư mục thủ công
+- Thiết lập web.xml
+- Cấu hình build tool (Maven/Gradle)
+- Tạo và cấu hình các file XML hoặc Java Config
+- Deploy lên application server
+
+Spring Boot - Nhanh chóng:
+- Sử dụng Spring Initializr (start.spring.io)
+- Tạo project với một vài click
+- Embedded server (Tomcat, Jetty)
+- Chạy ngay với main method
+
+4. QUẢN LÝ PHỤ THUỘC
+
+Spring MVC - Thủ công:
+- Phải khai báo từng dependency cụ thể
+- Tự quản lý version compatibility
+- Có thể xảy ra conflict giữa các version
+- Cần hiểu rõ về các dependency cần thiết
+
+Spring Boot - Tự động và thông minh:
+- Starter dependencies (spring-boot-starter-web, spring-boot-starter-data-jpa)
+- Tự động quản lý version compatibility
+- Bill of Materials (BOM) đảm bảo tương thích
+- Giảm thiểu dependency hell
+
+5. THỜI GIAN PHÁT TRIỂN
+
+Spring MVC - Chậm:
+- Mất nhiều thời gian cho setup và cấu hình
+- Debug configuration issues
+- Học curve cao cho người mới
+- Thời gian deployment lâu
+
+Spring Boot - Nhanh:
+- Rapid prototyping
+- Quick start với minimal setup
+- Focus vào business logic thay vì configuration
+- Hot reload với DevTools
+
+6. KÍCH THƯỚC ỨNG DỤNG
+
+Spring MVC - Nhỏ hơn:
+- Chỉ include những dependency thực sự cần
+- Có thể tối ưu được kích thước
+- Cần application server riêng
+
+Spring Boot - Lớn hơn:
+- Include embedded server
+- Nhiều auto-configuration classes
+- Fat JAR với tất cả dependencies
+- Standalone application
+
+7. KIỂM SOÁT VÀ TÙY BIẾN
+
+Spring MVC - Cao:
+- Kiểm soát hoàn toàn mọi aspect của cấu hình
+- Linh hoạt trong việc customize
+- Phù hợp cho các yêu cầu đặc biệt
+- Fine-grained control
+
+Spring Boot - Trung bình:
+- Auto-configuration có thể che giấu complexity
+- Có thể override khi cần
+- Convention over configuration
+- Phù hợp cho hầu hết use cases
+
+8. LEARNING CURVE
+
+Spring MVC - Cao:
+- Cần hiểu sâu về Spring ecosystem
+- Phải nắm vững cách cấu hình
+- Kiến thức về application servers
+- Debug configuration khó khăn
+
+Spring Boot - Thấp:
+- Dễ dàng cho người mới bắt đầu
+- Convention-based approach
+- Extensive documentation
+- Nhiều examples và tutorials
+
+9. PHÙ HỢP CHO
+
+Spring MVC - Dự án phức tạp:
+- Enterprise applications
+- Yêu cầu cấu hình đặc biệt
+- Legacy systems integration
+- Microservices với custom setup
+
+Spring Boot - Phần lớn dự án:
+- Rapid development
+- Microservices
+- REST APIs
+- Prototyping và POC
+- Startup projects
+
+KẾT LUẬN
+
+Spring Boot là sự lựa chọn tốt hơn cho hầu hết các dự án hiện đại nhờ vào:
+- Tốc độ phát triển nhanh
+- Cấu hình đơn giản
+- Community support mạnh mẽ
+- Phù hợp với xu hướng microservices
+
+Spring MVC vẫn có giá trị khi:
+- Cần kiểm soát hoàn toàn cấu hình
+- Làm việc với legacy systems
+- Yêu cầu tối ưu kích thước ứng dụng
+- Dự án có architecture đặc biệt
